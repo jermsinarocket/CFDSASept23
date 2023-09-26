@@ -1,0 +1,28 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dov-pod
+  namespace: myns
+  labels:
+    app: dev
+    dept: eng
+spec:
+  containers:
+    - name: dov-container
+      image: chukmunnlee/dov-bear:v5
+      imagePullPolicy: IfNotPresent
+      ports:
+      #EXPOSE
+        - containerPort: 3000
+      env:
+        - name: INSTANCE_NAME
+          value: dov-bear
+        - name: INSTANCE_HASH
+          valueFrom: 
+            fieldRef:
+              fieldPath: status.podIP
+      livenessProbe:
+        httpGet:
+          path: /healthz
+          port: 3000
