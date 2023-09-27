@@ -1,0 +1,20 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: codeserver-configmap
+  namespace: codeserver
+data:
+  TZ: Asia/Singapore
+  DEFAULT_WORkSPACE: /config/workspace
+  PROXY_DOMAINP: code-159.89.208.214.nip.io
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: codeserver-secret
+  namespace: codeserver
+type: Opaque
+data:
+  PASSWORD: Y2hhbmdlaXQ=  # Base64-encoded password "changeit"
+  SUDO_PASSWORD: Y2hhbmdlaXQ=
