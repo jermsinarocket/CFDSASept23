@@ -1,0 +1,110 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Namespace
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","kind":"Namespace","metadata":{"annotations":{},"labels":{"env":"dev"},"name":"devns"}}
+    labels:
+      env: dev
+    name: devns
+- apiVersion: v1
+  data:
+    INSTANCE_NAME: ' "my dev bear"'
+  kind: ConfigMap
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","data":{"INSTANCE_NAME":" \"my dev bear\""},"kind":"ConfigMap","metadata":{"annotations":{},"labels":{"env":"dev"},"name":"dov-cm-d54d764fcb","namespace":"devns"}}
+    labels:
+      env: dev
+    name: dov-cm-d54d764fcb
+    namespace: devns
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"env":"dev"},"name":"dov-svc","namespace":"devns"},"spec":{"ports":[{"port":8080,"targetPort":3000}],"selector":{"app":"dov","dept":"eng","env":"dev"},"type":"NodePort"}}
+    labels:
+      env: dev
+    name: dov-svc
+    namespace: devns
+  spec:
+    ports:
+    - port: 8080
+      targetPort: 3000
+    selector:
+      app: dov
+      dept: eng
+      env: dev
+    type: NodePort
+- apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"labels":{"env":"dev"},"name":"dov-deploy","namespace":"devns"},"spec":{"replicas":1,"selector":{"matchLabels":{"app":"dov","dept":"eng","env":"dev"}},"template":{"metadata":{"labels":{"app":"dov","dept":"eng","env":"dev"},"name":"dov-po"},"spec":{"containers":[{"env":[{"name":"INSTANCE_HASH","valueFrom":{"fieldRef":{"fieldPath":"status.podIP"}}}],"envFrom":[{"configMapRef":{"name":"dov-cm-d54d764fcb"}}],"image":"chukmunnlee/dov-bear:v5","imagePullPolicy":"IfNotPresent","livenessProbe":{"httpGet":{"path":"/healthz","port":3000}},"name":"dov-container","ports":[{"containerPort":3000}]}]}}}}
+    labels:
+      env: dev
+    name: dov-deploy
+    namespace: devns
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: dov
+        dept: eng
+        env: dev
+    template:
+      metadata:
+        labels:
+          app: dov
+          dept: eng
+          env: dev
+        name: dov-po
+      spec:
+        containers:
+        - env:
+          - name: INSTANCE_HASH
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          envFrom:
+          - configMapRef:
+              name: dov-cm-d54d764fcb
+          image: chukmunnlee/dov-bear:v5
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 3000
+          name: dov-container
+          ports:
+          - containerPort: 3000
+- apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"networking.k8s.io/v1","kind":"Ingress","metadata":{"annotations":{},"labels":{"env":"dev"},"name":"dov-ing","namespace":"devns"},"spec":{"ingressClassName":"nginx","rules":[{"host":"dev-dov-188.166.196.227.nip.io","http":{"paths":[{"backend":{"service":{"name":"dov-svc","port":{"number":8080}}},"path":"/","pathType":"Prefix"}]}}]}}
+    labels:
+      env: dev
+    name: dov-ing
+    namespace: devns
+  spec:
+    ingressClassName: nginx
+    rules:
+    - host: dev-dov-188.166.196.227.nip.io
+      http:
+        paths:
+        - backend:
+            service:
+              name: dov-svc
+              port:
+                number: 8080
+          path: /
+          pathType: Prefix
+kind: List
+metadata: {}

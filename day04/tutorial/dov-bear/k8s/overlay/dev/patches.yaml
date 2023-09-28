@@ -1,0 +1,3 @@
+- op: replace 
+  path: /spec/rules/0/host
+  value: dev-dov-188.166.196.227.nip.io

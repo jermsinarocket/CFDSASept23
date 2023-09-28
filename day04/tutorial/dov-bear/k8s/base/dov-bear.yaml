@@ -1,0 +1,73 @@
+
+---
+apiVersion: apps/v1 
+kind: Deployment 
+metadata:
+  name: dov-deploy 
+  namespace: dovns
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: dov 
+      dept: eng
+  template:
+    metadata:
+      name: dov-po
+      labels:
+        app: dov
+        dept: eng
+    spec: 
+      containers:
+      - name: dov-container 
+        image: chukmunnlee/dov-bear@sha256:483038792aba29562a4d2044e790d7d3e7e6e6f684ce1fcafc3864949c000224
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+        env:
+        - name: INSTANCE_HASH
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        envFrom:
+        - configMapRef:
+            name: dov-cm
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 3000
+
+---
+apiVersion: v1 
+kind: Service 
+metadata:
+  name: dov-svc
+  namespace: dovns 
+spec:
+  type: NodePort
+  selector: 
+    app: dov 
+    dept: eng
+  ports:
+  - port: 8080
+    targetPort: 3000
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dov-ing
+  namespace: dovns
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: dov-188.166.196.227.nip.io
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: dov-svc
+            port:
+              number: 8080

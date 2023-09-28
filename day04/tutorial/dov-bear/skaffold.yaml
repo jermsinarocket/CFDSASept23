@@ -1,0 +1,31 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: dov-bear
+build:
+  artifacts:
+    - image: chukmunnlee/sk-dov-bear
+      context: .
+      docker:
+        dockerfile: Dockerfile
+  tagPolicy:
+    customTemplate:
+      template: v6-beta
+
+manifests:
+  kustomize:
+    paths:
+      - k8s/overlay/dev
+
+deploy:
+  kubectl:
+    flags:
+      delete:
+        - --force=0
+        - --grace-period=0
+
+portForward:
+  - resourceType: Service
+    resourceName: dev-dov-svc
+    port: 8080 
+    localPort: 3000
